@@ -11,7 +11,8 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.transport.Method;
-import org.pcollections.PSequence;
+import scala.collection.immutable.Seq;
+
 
 /**
  * The friend service.
@@ -46,7 +47,7 @@ public interface FriendService extends Service {
    * The ID for this service call is the Id of the user to get the followers for.
    * The response message is the list of follower IDs.
    */
-  ServiceCall<String, NotUsed, PSequence<String>> getFollowers();
+  ServiceCall<String, NotUsed, Seq<String>> getFollowers();
 
   @Override
   default Descriptor descriptor() {

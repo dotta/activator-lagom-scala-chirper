@@ -1,12 +1,14 @@
 organization in ThisBuild := "sample.chirper"
 
-// the Scala version that will be used for cross-compiled libraries
-scalaVersion in ThisBuild := "2.11.7"
-
 lazy val friendApi = project("friend-api")
   .settings(
     version := "1.0-SNAPSHOT",
-    libraryDependencies += lagomJavadslApi
+    libraryDependencies ++= Seq(
+      lagomJavadslApi,
+      lagomJavadslTestKit,
+       "com.novocode" % "junit-interface" % "0.11" % "test",
+       "junit" % "junit" % "4.12" % "test"
+    )
   )
 
 lazy val friendImpl = project("friend-impl")
@@ -19,7 +21,7 @@ lazy val friendImpl = project("friend-impl")
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(friendApi)
+  .dependsOn(friendApi, utils)
 
 lazy val chirpApi = project("chirp-api")
   .settings(
@@ -41,7 +43,7 @@ lazy val chirpImpl = project("chirp-impl")
     )
   )
   .settings(lagomForkedTestSettings: _*)
-  .dependsOn(chirpApi)
+  .dependsOn(chirpApi, utils)
 
 lazy val activityStreamApi = project("activity-stream-api")
   .settings(
@@ -56,10 +58,10 @@ lazy val activityStreamImpl = project("activity-stream-impl")
     version := "1.0-SNAPSHOT",
     libraryDependencies += lagomJavadslTestKit
   )
-  .dependsOn(activityStreamApi, chirpApi, friendApi)
+  .dependsOn(activityStreamApi, chirpApi, friendApi, utils)
 
 lazy val frontEnd = project("front-end")
-  .enablePlugins(PlayJava, LagomPlay)
+  .enablePlugins(PlayScala, LagomPlay)
   .settings(
     version := "1.0-SNAPSHOT",
     routesGenerator := InjectedRoutesGenerator,
@@ -81,12 +83,27 @@ lazy val loadTestApi = project("load-test-api")
 lazy val loadTestImpl = project("load-test-impl")
   .enablePlugins(LagomJava)
   .settings(version := "1.0-SNAPSHOT")
-  .dependsOn(loadTestApi, friendApi, activityStreamApi, chirpApi)
+  .dependsOn(loadTestApi, friendApi, activityStreamApi, chirpApi, utils)
+
+lazy val utils = project("utils")
+  .settings(
+    version := "1.0-SNAPSHOT",
+    libraryDependencies += lagomJavadslApi
+  )
 
 def project(id: String) = Project(id, base = file(id))
   .settings(eclipseSettings: _*)
-  .settings(javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-Xlint:deprecation"))
+  .settings(
+    javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-Xlint:deprecation"),
+    scalaVersion := "2.11.8",
+    scalacOptions in Compile += "-Xexperimental" // this enables Scala lambdas to be passed as Java SAMs  
+  )
   .settings(jacksonParameterNamesJavacSettings: _*) // applying it to every project even if not strictly needed.
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.7.3" // actually, only api projects need this
+    )
+  )
 
 
 // See https://github.com/FasterXML/jackson-module-parameter-names
@@ -96,15 +113,12 @@ lazy val jacksonParameterNamesJavacSettings = Seq(
 
 // configuration of sbteclipse
 lazy val eclipseSettings = Seq(
-  EclipseKeys.projectFlavor := EclipseProjectFlavor.Java,
+  EclipseKeys.projectFlavor := EclipseProjectFlavor.Scala,
   EclipseKeys.withBundledScalaContainers := false,
   EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource,
   EclipseKeys.eclipseOutput := Some(".target"),
   EclipseKeys.withSource := true,
-  EclipseKeys.withJavadoc := true,
-  // avoid some scala specific source directories
-  unmanagedSourceDirectories in Compile := Seq((javaSource in Compile).value),
-  unmanagedSourceDirectories in Test := Seq((javaSource in Test).value)
+  EclipseKeys.withJavadoc := true
 )
 
 // do not delete database files on start
@@ -117,6 +131,3 @@ licenses in ThisBuild := Seq("Apache-2.0" -> url("http://www.apache.org/licenses
 bintrayVcsUrl in Bundle in ThisBuild := Some("https://github.com/lagom/activator-lagom-java-chirper")
 bintrayOrganization in Bundle in ThisBuild := Some("typesafe")
 bintrayReleaseOnPublish in Bundle in ThisBuild := true
-
-
-fork in run := true
