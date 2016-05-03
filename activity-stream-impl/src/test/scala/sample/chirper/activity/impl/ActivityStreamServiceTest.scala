@@ -44,7 +44,7 @@ class ActivityStreamServiceTest {
   def shouldGetLiveFeed(): Unit = {
     withServer(setup, server => {
       val feedService = server.client(classOf[ActivityStreamService])
-      val chirps = feedService.getLiveActivityStream().invoke("usr1", NotUsed)
+      val chirps = feedService.getLiveActivityStream("usr1").invoke()
         .toCompletableFuture().get(3, SECONDS)
       val probe = chirps.runWith(TestSink.probe(server.system), server.materializer)
       probe.request(10)
@@ -59,7 +59,7 @@ class ActivityStreamServiceTest {
   def shouldGetHistoricalFeed(): Unit = {
     withServer(setup, server => {
       val feedService = server.client(classOf[ActivityStreamService])
-      val chirps = feedService.getHistoricalActivityStream().invoke("usr1", NotUsed)
+      val chirps = feedService.getHistoricalActivityStream("usr1").invoke()
         .toCompletableFuture().get(3, SECONDS)
       val probe = chirps.runWith(TestSink.probe(server.system), server.materializer)
       probe.request(10)
@@ -73,10 +73,10 @@ object ActivityStreamServiceTest {
   private class FriendServiceStub extends FriendService {
 
     private val usr1 = User("usr1", "User 1", Seq("usr2"))
-    private val usr2 = User("usr2", "User 2")
+    private val usr2 = new User("usr2", "User 2")
 
-    override def getUser(): ServiceCall[String, NotUsed, User] = {
-      (id, req) =>
+    override def getUser(id: String): ServiceCall[NotUsed, User] = {
+      req =>
         {
           if (id == usr1.userId) Future.successful(usr1)
           else if (id == usr2.userId) Future.successful(usr2)
@@ -84,29 +84,29 @@ object ActivityStreamServiceTest {
         }
     }
 
-    override def createUser(): ServiceCall[NotUsed, User, NotUsed] =
-      (id, req) => Future.successful(NotUsed)
+    override def createUser(): ServiceCall[User, NotUsed] =
+      _ => Future.successful(NotUsed)
 
-    override def addFriend(): ServiceCall[String, FriendId, NotUsed] =
-      (id, req) => Future.successful(NotUsed)
+    override def addFriend(userId: String): ServiceCall[FriendId, NotUsed] =
+      _ => Future.successful(NotUsed)
 
-    override def getFollowers(): ServiceCall[String, NotUsed, Seq[String]] = {
-      (id, req) =>
+    override def getFollowers(userId: String): ServiceCall[NotUsed, Seq[String]] = {
+      _ =>
         {
-          if (id == usr1.userId) Future.successful(Seq.empty)
-          else if (id == usr2.userId) Future.successful(Seq("usr1"))
-          else throw new NotFound(id);
+          if (userId == usr1.userId) Future.successful(Seq.empty)
+          else if (userId == usr2.userId) Future.successful(Seq("usr1"))
+          else throw new NotFound(userId);
         }
     }
   }
 
   private class ChirpServiceStub extends ChirpService {
 
-    override def addChirp(): ServiceCall[String, Chirp, NotUsed] =
-      (id, req) => Future.successful(NotUsed)
+    override def addChirp(userId: String): ServiceCall[Chirp, NotUsed] =
+      _ => Future.successful(NotUsed)
 
-    override def getLiveChirps(): ServiceCall[NotUsed, LiveChirpsRequest, Source[Chirp, _]] = {
-      (id, req) =>
+    override def getLiveChirps(): ServiceCall[LiveChirpsRequest, Source[Chirp, _]] = {
+      req =>
         {
           if (req.userIds.contains("usr2")) {
             val c1 = new Chirp("usr2", "msg1")
@@ -116,8 +116,8 @@ object ActivityStreamServiceTest {
         }
     }
 
-    override def getHistoricalChirps(): ServiceCall[NotUsed, HistoricalChirpsRequest, Source[Chirp, _]] = {
-      (id, req) =>
+    override def getHistoricalChirps(): ServiceCall[HistoricalChirpsRequest, Source[Chirp, _]] = {
+      req =>
         {
           if (req.userIds.contains("usr2")) {
             val c1 = new Chirp("usr2", "msg1");

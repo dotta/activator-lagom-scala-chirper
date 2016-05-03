@@ -3,12 +3,7 @@ organization in ThisBuild := "sample.chirper"
 lazy val friendApi = project("friend-api")
   .settings(
     version := "1.0-SNAPSHOT",
-    libraryDependencies ++= Seq(
-      lagomJavadslApi,
-      lagomJavadslTestKit,
-       "com.novocode" % "junit-interface" % "0.11" % "test",
-       "junit" % "junit" % "4.12" % "test"
-    )
+    libraryDependencies += lagomJavadslApi
   )
 
 lazy val friendImpl = project("friend-impl")
@@ -92,34 +87,15 @@ lazy val utils = project("utils")
   )
 
 def project(id: String) = Project(id, base = file(id))
-  .settings(eclipseSettings: _*)
   .settings(
-    javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-Xlint:deprecation"),
     scalaVersion := "2.11.8",
     scalacOptions in Compile += "-Xexperimental" // this enables Scala lambdas to be passed as Java SAMs  
   )
-  .settings(jacksonParameterNamesJavacSettings: _*) // applying it to every project even if not strictly needed.
   .settings(
     libraryDependencies ++= Seq(
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.7.3" // actually, only api projects need this
     )
   )
-
-
-// See https://github.com/FasterXML/jackson-module-parameter-names
-lazy val jacksonParameterNamesJavacSettings = Seq(
-  javacOptions in compile += "-parameters"
-)
-
-// configuration of sbteclipse
-lazy val eclipseSettings = Seq(
-  EclipseKeys.projectFlavor := EclipseProjectFlavor.Scala,
-  EclipseKeys.withBundledScalaContainers := false,
-  EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource,
-  EclipseKeys.eclipseOutput := Some(".target"),
-  EclipseKeys.withSource := true,
-  EclipseKeys.withJavadoc := true
-)
 
 // do not delete database files on start
 lagomCassandraCleanOnStart in ThisBuild := false
@@ -128,6 +104,6 @@ lagomCassandraCleanOnStart in ThisBuild := false
 // (see http://conductr.lightbend.com/docs/1.1.x/CreatingBundles#Publishing-bundles for more
 // information)
 licenses in ThisBuild := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0"))
-bintrayVcsUrl in Bundle in ThisBuild := Some("https://github.com/lagom/activator-lagom-java-chirper")
+bintrayVcsUrl in Bundle in ThisBuild := Some("https://github.com/lagom/activator-lagom-scala-chirper")
 bintrayOrganization in Bundle in ThisBuild := Some("typesafe")
 bintrayReleaseOnPublish in Bundle in ThisBuild := true

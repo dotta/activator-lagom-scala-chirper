@@ -55,12 +55,12 @@ class LoadTestServiceImpl @Inject() (
   private val runSeq = new AtomicLong((System.currentTimeMillis()
     - LocalDate.now(ZoneOffset.UTC).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()) / 1000)
 
-  override def startLoad(): ServiceCall[NotUsed, NotUsed, Source[String, _]] = {
-    (id, req) => Future.successful(load(new TestParams()))
+  override def startLoad(): ServiceCall[NotUsed, Source[String, _]] = {
+    _ => Future.successful(load(new TestParams()))
   }
 
-  override def startLoadHeadless(): ServiceCall[NotUsed, TestParams, NotUsed] = {
-    (id, params) =>
+  override def startLoadHeadless(): ServiceCall[TestParams, NotUsed] = {
+    params =>
       {
         load(params).runWith(Sink.ignore(), mat)
         Future.successful(NotUsed)
@@ -84,8 +84,7 @@ class LoadTestServiceImpl @Inject() (
 
     val chirpCount = new AtomicLong()
     val addedFriends = friendPairs.mapAsyncUnordered(params.parallelism, pair => {
-      val invoked = friendService.addFriend().invoke(
-        userIdPrefix + pair._1, FriendId(userIdPrefix + pair._2))
+      val invoked = friendService.addFriend(userIdPrefix + pair._1).invoke(FriendId(userIdPrefix + pair._2))
       // start clients when last friend association has been created
       if (params.users == pair._1 && (params.users + params.friends) == pair._2)
         invoked.thenAccept(a => startClients(params.clients, userIdPrefix, chirpCount, runSeqNr))
@@ -100,7 +99,7 @@ class LoadTestServiceImpl @Inject() (
     })
 
     val postedChirps = chirps.mapAsyncUnordered(params.parallelism, chirp => {
-      chirpService.addChirp().invoke(chirp.userId, chirp)
+      chirpService.addChirp(chirp.userId).invoke(chirp)
     }).via(summary("posted chirp"));
 
     val writes = Source.from(Arrays.asList(createdUsers, addedFriends, postedChirps))
@@ -147,7 +146,7 @@ class LoadTestServiceImpl @Inject() (
   private def startClients(numberOfClients: Int, userIdPrefix: String, chirpCount: AtomicLong, runSeqNr: Long): Unit = {
     log.info("starting " + numberOfClients + " clients for users prefixed with " + userIdPrefix)
     for (n <- 1 to numberOfClients) {
-      activityService.getLiveActivityStream().invoke(userIdPrefix + n, NotUsed.getInstance()).thenAccept(src => {
+      activityService.getLiveActivityStream(userIdPrefix + n).invoke().thenAccept(src => {
         src.map(chirp =>
           if (runSeq.get() != runSeqNr) throw new RuntimeException("New test started, stopping previous clients")
           else chirp

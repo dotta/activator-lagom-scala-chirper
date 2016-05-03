@@ -30,26 +30,26 @@ class FriendServiceImpl @Inject() (
   persistentEntities.register(classOf[FriendEntity])
   readSide.register(classOf[FriendEventProcessor])
 
-  override def getUser(): ServiceCall[String, NotUsed, User] = {
-    (id, request) =>
+  override def getUser(id: String): ServiceCall[NotUsed, User] = {
+    request =>
       friendEntityRef(id).ask[GetUserReply, GetUser](GetUser()).toScala
         .map(_.user.getOrElse(throw new NotFound(s"user $id not found")))
   }
 
-  override def createUser(): ServiceCall[NotUsed, User, NotUsed] = {
-    (id, request) =>
+  override def createUser(): ServiceCall[User, NotUsed] = {
+    request =>
       friendEntityRef(request.userId).ask[Done, CreateUser](CreateUser(request)).toScala.map(_ => NotUsed)
   }
 
-  override def addFriend(): ServiceCall[String, FriendId, NotUsed] = {
-    (id, request) =>
-      friendEntityRef(id).ask[Done, AddFriend](AddFriend(request.friendId)).toScala.map(_ => NotUsed)
+  override def addFriend(userId: String): ServiceCall[FriendId, NotUsed] = {
+    request =>
+      friendEntityRef(userId).ask[Done, AddFriend](AddFriend(request.friendId)).toScala.map(_ => NotUsed)
   }
 
-  override def getFollowers(): ServiceCall[String, NotUsed, Seq[String]] = {
-    (userId, req) =>
+  override def getFollowers(id: String): ServiceCall[NotUsed, Seq[String]] = {
+    req =>
       {
-        db.selectAll("SELECT * FROM follower WHERE userId = ?", userId).toScala.map { jrows =>
+        db.selectAll("SELECT * FROM follower WHERE userId = ?", id).toScala.map { jrows =>
           val rows = jrows.asScala.toVector
           rows.map(_.getString("followedBy"))
         }

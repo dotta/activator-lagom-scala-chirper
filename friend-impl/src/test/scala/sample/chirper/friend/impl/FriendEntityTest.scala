@@ -42,7 +42,7 @@ class FriendEntityTest {
   def testCreateUser(): Unit = {
     val driver = new PersistentEntityTestDriver(system, new FriendEntity(), "user-1")
 
-    val outcome = driver.run(CreateUser(User("alice", "Alice")))
+    val outcome = driver.run(CreateUser(new User("alice", "Alice")))
     assertEquals(Done, outcome.getReplies.get(0))
     assertEquals("alice", outcome.events.get(0).asInstanceOf[UserCreated].userId)
     assertEquals("Alice", outcome.events.get(0).asInstanceOf[UserCreated].name)
@@ -54,7 +54,7 @@ class FriendEntityTest {
     val driver = new PersistentEntityTestDriver(system, new FriendEntity(), "user-1")
     driver.run(new CreateUser(new User("alice", "Alice")));
 
-    val outcome = driver.run(CreateUser(User("alice", "Alice")))
+    val outcome = driver.run(CreateUser(new User("alice", "Alice")))
     assertEquals(classOf[PersistentEntity.InvalidCommandException], outcome.getReplies.get(0).getClass())
     assertEquals(Collections.emptyList(), outcome.events)
     assertEquals(Collections.emptyList(), driver.getAllIssues)
@@ -76,7 +76,7 @@ class FriendEntityTest {
   @Test
   def testAddFriend(): Unit = {
     val driver = new PersistentEntityTestDriver(system, new FriendEntity(), "user-1")
-    driver.run(CreateUser(User("alice", "Alice")))
+    driver.run(CreateUser(new User("alice", "Alice")))
 
     val outcome = driver.run(AddFriend("bob"), AddFriend("peter"))
     assertEquals(Done, outcome.getReplies.get(0))
@@ -88,7 +88,7 @@ class FriendEntityTest {
   @Test
   def testAddDuplicateFriend(): Unit = {
     val driver = new PersistentEntityTestDriver(system, new FriendEntity(), "user-1")
-    driver.run(CreateUser(User("alice", "Alice")))
+    driver.run(CreateUser(new User("alice", "Alice")))
     driver.run(AddFriend("bob"), AddFriend("peter"))
 
     val outcome = driver.run(AddFriend("bob"))
@@ -100,7 +100,7 @@ class FriendEntityTest {
   @Test
   def testGetUser(): Unit = {
     val driver = new PersistentEntityTestDriver(system, new FriendEntity(), "user-1")
-    val alice = User("alice", "Alice")
+    val alice = new User("alice", "Alice")
     driver.run(CreateUser(alice))
 
     val outcome = driver.run(GetUser())

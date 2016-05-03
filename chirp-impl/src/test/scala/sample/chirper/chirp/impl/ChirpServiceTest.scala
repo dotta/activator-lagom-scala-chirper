@@ -52,17 +52,17 @@ class ChirpServiceTest {
     probe2.request(10)
 
     val chirp1 = new Chirp("usr1", "hello 1")
-    chirpService.addChirp().invoke("usr1", chirp1).toCompletableFuture().get(3, SECONDS)
+    chirpService.addChirp("usr1").invoke(chirp1).toCompletableFuture().get(3, SECONDS)
     probe1.expectNext(chirp1)
     probe2.expectNext(chirp1)
 
     val chirp2 = new Chirp("usr1", "hello 2")
-    chirpService.addChirp().invoke("usr1", chirp2).toCompletableFuture().get(3, SECONDS)
+    chirpService.addChirp("usr1").invoke(chirp2).toCompletableFuture().get(3, SECONDS)
     probe1.expectNext(chirp2)
     probe2.expectNext(chirp2)
 
     val chirp3 = new Chirp("usr2", "hello 3");
-    chirpService.addChirp().invoke("usr2", chirp3).toCompletableFuture().get(3, SECONDS)
+    chirpService.addChirp("usr2").invoke(chirp3).toCompletableFuture().get(3, SECONDS)
     probe1.expectNext(chirp3)
     probe2.expectNext(chirp3)
 
@@ -76,10 +76,10 @@ class ChirpServiceTest {
     val chirpService = server.client(classOf[ChirpService])
 
     val chirp1 = new Chirp("usr3", "hi 1")
-    chirpService.addChirp().invoke("usr3", chirp1).toCompletableFuture().get(3, SECONDS)
+    chirpService.addChirp("usr3").invoke(chirp1).toCompletableFuture().get(3, SECONDS)
 
     val chirp2 = new Chirp("usr4", "hi 2")
-    chirpService.addChirp().invoke("usr4", chirp2).toCompletableFuture().get(3, SECONDS)
+    chirpService.addChirp("usr4").invoke(chirp2).toCompletableFuture().get(3, SECONDS)
 
     val request = new LiveChirpsRequest(Seq("usr3", "usr4"))
     val chirps = chirpService.getLiveChirps().invoke(request).toCompletableFuture().get(3, SECONDS)
@@ -88,7 +88,7 @@ class ChirpServiceTest {
     probe.expectNextUnordered(chirp1, chirp2);
 
     val chirp3 = new Chirp("usr4", "hi 3")
-    chirpService.addChirp().invoke("usr4", chirp3).toCompletableFuture().get(3, SECONDS)
+    chirpService.addChirp("usr4").invoke(chirp3).toCompletableFuture().get(3, SECONDS)
     probe.expectNext(chirp3)
 
     probe.cancel()
@@ -100,10 +100,10 @@ class ChirpServiceTest {
     val chirpService = server.client(classOf[ChirpService])
 
     val chirp1 = new Chirp("usr5", "msg 1")
-    chirpService.addChirp().invoke("usr5", chirp1).toCompletableFuture().get(3, SECONDS)
+    chirpService.addChirp("usr5").invoke(chirp1).toCompletableFuture().get(3, SECONDS)
 
     val chirp2 = new Chirp("usr6", "msg 2")
-    chirpService.addChirp().invoke("usr6", chirp2).toCompletableFuture().get(3, SECONDS)
+    chirpService.addChirp("usr6").invoke(chirp2).toCompletableFuture().get(3, SECONDS)
 
     val request = new HistoricalChirpsRequest(Instant.now().minusSeconds(20), Seq("usr5", "usr6"))
     val chirps = chirpService.getHistoricalChirps().invoke(request).toCompletableFuture().get(3, SECONDS)

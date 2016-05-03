@@ -44,31 +44,36 @@ class ChirpServiceImpl @Inject()(
   private def createTable(): Unit = {
     // @formatter:off
     val result = db.executeCreateTable(
-        "CREATE TABLE IF NOT EXISTS chirp ("
-        + "userId text, timestamp bigint, uuid text, message text, "
-        + "PRIMARY KEY (userId, timestamp, uuid))")
-    // @formatter:on
+      """CREATE TABLE IF NOT EXISTS chirp
+       | (userId text, timestamp bigint, uuid text, message text,
+       | PRIMARY KEY (userId, timestamp, uuid))
+       |""".stripMargin
+    )
     result.toScala.onFailure {
       case err: Throwable => log.error(s"Failed to create chirp table, due to: ${err.getMessage}", err)
     }
   }
 
-  override def addChirp(): ServiceCall[String, Chirp, NotUsed] = {
-    (userId, chirp) => {
-      if (userId != chirp.userId)throw new IllegalArgumentException(s"UserId ${userId} did not match userId in ${chirp}")
+  override def addChirp(userId: String): ServiceCall[Chirp, NotUsed] = {
+    chirp => {
+      if (userId != chirp.userId)
+        throw new IllegalArgumentException(s"UserId ${userId} did not match userId in ${chirp}")
+
       val topic = topics.refFor(TopicId.of(classOf[Chirp], topicQualifier(userId)))
-      topic.publish(chirp);
-      db.executeWrite("INSERT INTO chirp (userId, uuid, timestamp, message) VALUES (?, ?, ?, ?)",
+      topic.publish(chirp)
+
+      val insertChirp = db.executeWrite("INSERT INTO chirp (userId, uuid, timestamp, message) VALUES (?, ?, ?, ?)",
           chirp.userId, chirp.uuid, chirp.timestamp.toEpochMilli().asInstanceOf[AnyRef],
-          chirp.message).thenApply(_ => NotUsed)
+          chirp.message).toScala
+      insertChirp.map(_ => NotUsed)
     }
   }
 
   private def topicQualifier(userId: String): String =
     String.valueOf(Math.abs(userId.hashCode()) % ChirpServiceImpl.MaxTopics)
 
-  override def getLiveChirps(): ServiceCall[NotUsed, LiveChirpsRequest, Source[Chirp, _]] = {
-    (_, req) => {
+  override def getLiveChirps(): ServiceCall[LiveChirpsRequest, Source[Chirp, _]] = {
+    req => {
       recentChirps(req.userIds).map { chirps =>
         val sources = for(userId <- req.userIds) yield {
           val topic = topics.refFor(TopicId.of(classOf[Chirp], topicQualifier(userId)))
@@ -85,8 +90,8 @@ class ChirpServiceImpl @Inject()(
     }
   }
 
-  override def  getHistoricalChirps(): ServiceCall[NotUsed, HistoricalChirpsRequest, Source[Chirp, _]] = {
-    (_, req) => {
+  override def  getHistoricalChirps(): ServiceCall[HistoricalChirpsRequest, Source[Chirp, _]] = {
+    req => {
       val userIds = req.userIds
       val chirps = userIds.map { userId => 
         db.select("SELECT * FROM chirp WHERE userId = ? AND timestamp >= ? ORDER BY timestamp ASC",
