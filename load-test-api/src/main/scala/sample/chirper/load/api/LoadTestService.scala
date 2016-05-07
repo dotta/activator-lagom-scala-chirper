@@ -8,7 +8,6 @@ import com.lightbend.lagom.javadsl.api.Descriptor
 import com.lightbend.lagom.javadsl.api.ScalaService._
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceCall
-import com.lightbend.lagom.javadsl.api.transport.Method
 
 import akka.stream.javadsl.Source
 
@@ -29,8 +28,8 @@ trait LoadTestService extends Service {
   override def descriptor(): Descriptor = {
     // @formatter:off
     named("/loadtestservice").`with`(
-        pathCall("/load", startLoad _),
-        restCall(Method.POST, "/loadHeadless", startLoadHeadless _)
+        namedCall("/load", startLoad _),
+        pathCall("/loadHeadless", startLoadHeadless _)
       )
     // @formatter:on
   }

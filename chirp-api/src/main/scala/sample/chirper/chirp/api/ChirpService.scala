@@ -23,8 +23,8 @@ trait ChirpService extends Service {
     // @formatter:off
     named("chirpservice").`with`(
         pathCall("/api/chirps/live/:userId", addChirp _),
-        pathCall("/api/chirps/live", getLiveChirps _),
-        pathCall("/api/chirps/history", getHistoricalChirps _)
+        namedCall("/api/chirps/live", getLiveChirps _),
+        namedCall("/api/chirps/history", getHistoricalChirps _)
       ).withAutoAcl(true)
     // @formatter:on
   }

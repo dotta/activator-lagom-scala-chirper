@@ -8,7 +8,6 @@ import com.lightbend.lagom.javadsl.api.Descriptor
 import com.lightbend.lagom.javadsl.api.ScalaService._
 import com.lightbend.lagom.javadsl.api.Service
 import com.lightbend.lagom.javadsl.api.ServiceCall
-import com.lightbend.lagom.javadsl.api.transport.Method
 import scala.collection.immutable.Seq
 
 
@@ -50,10 +49,10 @@ trait FriendService extends Service {
   override def descriptor(): Descriptor = {
     // @formatter:off
     named("friendservice").`with`(
-        restCall(Method.GET,  "/api/users/:id", getUser _),
-        restCall(Method.POST, "/api/users", createUser _),
-        restCall(Method.POST, "/api/users/:userId/friends", addFriend _),
-        restCall(Method.GET,  "/api/users/:id/followers", getFollowers _)
+        pathCall("/api/users/:id", getUser _),
+        namedCall("/api/users", createUser _),
+        pathCall("/api/users/:userId/friends", addFriend _),
+        pathCall("/api/users/:id/followers", getFollowers _)
       ).withAutoAcl(true)
     // @formatter:on
   }
