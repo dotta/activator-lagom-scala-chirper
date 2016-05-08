@@ -29,22 +29,22 @@ class ActivityStreamServiceImpl @Inject() (
   override def getLiveActivityStream(userId: String): ServiceCall[NotUsed, Source[Chirp, _]] = {
     req =>
       for {
-        user <- friendService.getUser(userId).invoke().toScala
+        user <- friendService.getUser(userId).invoke()
         userIds = user.friends :+ userId
         chirpsReq = LiveChirpsRequest(userIds)
-        chirps <- chirpService.getLiveChirps().invoke(chirpsReq).toScala
+        chirps <- chirpService.getLiveChirps().invoke(chirpsReq)
       } yield chirps
   }
 
   override def getHistoricalActivityStream(userId: String): ServiceCall[NotUsed, Source[Chirp, _]] = {
     req =>
       for {
-        user <- friendService.getUser(userId).invoke().toScala
+        user <- friendService.getUser(userId).invoke()
         userIds = user.friends :+ userId
         // FIXME we should use HistoricalActivityStreamReq request parameter
         fromTime = Instant.now().minus(Duration.ofDays(7))
         chirpsReq = HistoricalChirpsRequest(fromTime, userIds)
-        chirps <- chirpService.getHistoricalChirps().invoke(chirpsReq).toScala
+        chirps <- chirpService.getHistoricalChirps().invoke(chirpsReq)
       } yield chirps
   }
 }

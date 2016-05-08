@@ -49,7 +49,7 @@ class ChirpServiceImpl @Inject()(
        | PRIMARY KEY (userId, timestamp, uuid))
        |""".stripMargin
     )
-    result.toScala.onFailure {
+    result.onFailure {
       case err: Throwable => log.error(s"Failed to create chirp table, due to: ${err.getMessage}", err)
     }
   }
@@ -62,10 +62,9 @@ class ChirpServiceImpl @Inject()(
       val topic = topics.refFor(TopicId.of(classOf[Chirp], topicQualifier(userId)))
       topic.publish(chirp)
 
-      val insertChirp = db.executeWrite("INSERT INTO chirp (userId, uuid, timestamp, message) VALUES (?, ?, ?, ?)",
+      db.executeWrite("INSERT INTO chirp (userId, uuid, timestamp, message) VALUES (?, ?, ?, ?)",
           chirp.userId, chirp.uuid, chirp.timestamp.toEpochMilli().asInstanceOf[AnyRef],
-          chirp.message).toScala
-      insertChirp.map(_ => NotUsed)
+          chirp.message)
     }
   }
 
@@ -115,7 +114,7 @@ class ChirpServiceImpl @Inject()(
     def getChirps(userId: String): Future[Seq[Chirp]] = {
       for {
         jRows <- db.selectAll("SELECT * FROM chirp WHERE userId = ? ORDER BY timestamp DESC LIMIT ?",
-                             userId, Integer.valueOf(limit)).toScala
+                             userId, Integer.valueOf(limit))
         rows = jRows.asScala.toVector
       } yield rows.map(mapChirp)
     }

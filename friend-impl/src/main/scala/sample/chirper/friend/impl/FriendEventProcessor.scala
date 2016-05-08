@@ -56,7 +56,7 @@ class FriendEventProcessor @Inject()(implicit ec: ExecutionContext) extends Cass
   }
 
   private def prepareWriteFollowers(session: CassandraSession) = {
-    val statement = session.prepare("INSERT INTO follower (userId, followedBy) VALUES (?, ?)").toScala
+    val statement = session.prepare("INSERT INTO follower (userId, followedBy) VALUES (?, ?)")
     statement.map(ps => {
       setWriteFollowers(ps)
       Done
@@ -64,7 +64,7 @@ class FriendEventProcessor @Inject()(implicit ec: ExecutionContext) extends Cass
   }
 
   private def prepareWriteOffset(session: CassandraSession) = {
-    val statement = session.prepare("INSERT INTO friend_offset (partition, offset) VALUES (1, ?)").toScala
+    val statement = session.prepare("INSERT INTO friend_offset (partition, offset) VALUES (1, ?)")
     statement.map(ps => {
       setWriteOffset(ps)
       Done
@@ -72,7 +72,7 @@ class FriendEventProcessor @Inject()(implicit ec: ExecutionContext) extends Cass
   }
 
   private def selectOffset(session: CassandraSession) = {
-    val select = session.selectOne("SELECT offset FROM friend_offset").toScala
+    val select = session.selectOne("SELECT offset FROM friend_offset")
     select.map { maybeRow => maybeRow.map[UUID](_.getUUID("offset")) }
   }
 
