@@ -13,7 +13,6 @@ import com.lightbend.lagom.javadsl.api.ServiceCall
 
 import akka.NotUsed
 import akka.stream.javadsl.Source
-import converter.ServiceCallConverter._
 import javax.inject.Inject
 import sample.chirper.activity.api.ActivityStreamService
 import sample.chirper.chirp.api.Chirp
@@ -25,6 +24,9 @@ import sample.chirper.friend.api.FriendService
 class ActivityStreamServiceImpl @Inject() (
     friendService: FriendService,
     chirpService: ChirpService)(implicit ec: ExecutionContext) extends ActivityStreamService {
+
+  // Needed to convert some Scala types to Java
+  import converter.ServiceCallConverter._
 
   override def getLiveActivityStream(userId: String): ServiceCall[NotUsed, Source[Chirp, _]] = {
     req =>

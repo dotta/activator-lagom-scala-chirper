@@ -1,5 +1,7 @@
 organization in ThisBuild := "sample.chirper"
 
+scalaVersion in ThisBuild := "2.11.8"
+
 lazy val friendApi = project("friend-api")
   .settings(
     version := "1.0-SNAPSHOT",
@@ -88,7 +90,6 @@ lazy val utils = project("utils")
 
 def project(id: String) = Project(id, base = file(id))
   .settings(
-    scalaVersion := "2.11.8",
     scalacOptions in Compile += "-Xexperimental" // this enables Scala lambdas to be passed as Java SAMs  
   )
   .settings(

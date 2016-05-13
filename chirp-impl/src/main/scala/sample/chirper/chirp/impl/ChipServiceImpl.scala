@@ -21,7 +21,6 @@ import com.lightbend.lagom.javadsl.pubsub.TopicId
 
 import akka.NotUsed
 import akka.stream.javadsl.Source
-import converter.ServiceCallConverter._
 import javax.inject.Inject
 import sample.chirper.chirp.api.Chirp
 import sample.chirper.chirp.api.ChirpService
@@ -37,10 +36,13 @@ class ChirpServiceImpl @Inject()(
   db: CassandraSession
   )(implicit ex: ExecutionContext) extends ChirpService {
 
+  // Needed to convert some Scala types to Java
+  import converter.ServiceCallConverter._
+
   private val log = LoggerFactory.getLogger(classOf[ChirpServiceImpl])
 
   createTable()
-
+  
   private def createTable(): Unit = {
     // @formatter:off
     val result = db.executeCreateTable(
