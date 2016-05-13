@@ -16,7 +16,6 @@ import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession
 
 import akka.Done
 import akka.NotUsed
-import converter.ServiceCallConverter._
 import javax.inject.Inject
 import sample.chirper.friend.api.FriendId
 import sample.chirper.friend.api.FriendService
@@ -27,6 +26,9 @@ class FriendServiceImpl @Inject() (
     readSide: CassandraReadSide,
     db: CassandraSession)(implicit ec: ExecutionContext) extends FriendService {
 
+  // Needed to convert some Scala types to Java
+  import converter.ServiceCallConverter._
+    
   persistentEntities.register(classOf[FriendEntity])
   readSide.register(classOf[FriendEventProcessor])
 

@@ -17,10 +17,12 @@ import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSideProces
 import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession
 
 import akka.Done
-import converter.ServiceCallConverter._
 import javax.inject.Inject
 
 class FriendEventProcessor @Inject()(implicit ec: ExecutionContext) extends CassandraReadSideProcessor[FriendEvent] {
+
+  // Needed to convert some Scala types to Java
+  import converter.CompletionStageConverters._
 
   @volatile private var writeFollowers: PreparedStatement = null // initialized in prepare
   @volatile private var writeOffset: PreparedStatement = null // initialized in prepare

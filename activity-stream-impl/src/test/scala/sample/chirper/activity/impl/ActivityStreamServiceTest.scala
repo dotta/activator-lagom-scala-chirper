@@ -21,7 +21,6 @@ import com.lightbend.lagom.javadsl.testkit.ServiceTest.withServer
 import akka.NotUsed
 import akka.stream.javadsl.Source
 import akka.stream.testkit.javadsl.TestSink
-import converter.ServiceCallConverter._
 import sample.chirper.activity.api.ActivityStreamService
 import sample.chirper.activity.impl.ActivityStreamServiceTest.ChirpServiceStub
 import sample.chirper.activity.impl.ActivityStreamServiceTest.FriendServiceStub
@@ -34,7 +33,6 @@ import sample.chirper.friend.api.FriendService
 import sample.chirper.friend.api.User
 
 class ActivityStreamServiceTest {
-
   private val setup = defaultSetup.withCluster(false)
     .withConfigureBuilder(b => b.overrides(bind(classOf[FriendService]).to(classOf[FriendServiceStub]),
       bind(classOf[ChirpService]).to(classOf[ChirpServiceStub])))
@@ -71,6 +69,9 @@ class ActivityStreamServiceTest {
 
 object ActivityStreamServiceTest {
   private class FriendServiceStub extends FriendService {
+    // Needed to convert some Scala types to Java
+    import converter.ServiceCallConverter._
+
 
     private val usr1 = User("usr1", "User 1", Seq("usr2"))
     private val usr2 = new User("usr2", "User 2")
@@ -101,6 +102,8 @@ object ActivityStreamServiceTest {
   }
 
   private class ChirpServiceStub extends ChirpService {
+    // Needed to convert some Scala types to Java
+    import converter.ServiceCallConverter._
 
     override def addChirp(userId: String): ServiceCall[Chirp, NotUsed] =
       _ => Future.successful(NotUsed)

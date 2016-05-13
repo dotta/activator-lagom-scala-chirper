@@ -33,7 +33,6 @@ import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import org.slf4j.LoggerFactory
-import converter.ServiceCallConverter._
 import scala.concurrent.Future
 import sample.chirper.load.api.TestParams
 import scala.collection.JavaConverters._
@@ -47,7 +46,9 @@ class LoadTestServiceImpl @Inject() (
     chirpService: ChirpService,
     friendService: FriendService,
     activityService: ActivityStreamService)(implicit mat: Materializer) extends LoadTestService {
-
+  // Needed to convert some Scala types to Java
+  import converter.ServiceCallConverter._
+    
   private val log = LoggerFactory.getLogger(classOf[LoadTestServiceImpl])
 
   // to create "unique" user ids we prefix them with this, convenient
