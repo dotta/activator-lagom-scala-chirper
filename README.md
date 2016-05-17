@@ -1,4 +1,4 @@
-[![Gitter](https://img.shields.io/gitter/room/gitterHQ/gitter.svg)](https://gitter.im/lagom/lagom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)[<img src="https://img.shields.io/travis/lagom/activator-lagom-scala-chirper.svg"/>](https://travis-ci.org/lagom/activator-lagom-scala-chirper)
+[![Gitter](https://img.shields.io/gitter/room/gitterHQ/gitter.svg)](https://gitter.im/lagom/lagom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)[<img src="https://img.shields.io/travis/dotta/activator-lagom-scala-chirper.svg"/>](https://travis-ci.org/dotta/activator-lagom-scala-chirper)
 # activator-lagom-scala-chirper
 
 A Lagom Scala template for Lightbend Activator showcasing a twitter-like application
