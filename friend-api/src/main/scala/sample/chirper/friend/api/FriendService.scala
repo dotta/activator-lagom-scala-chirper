@@ -48,7 +48,7 @@ trait FriendService extends Service {
 
   override def descriptor(): Descriptor = {
     // @formatter:off
-    named("friendservice").`with`(
+    named("friendservice").withCalls(
         pathCall("/api/users/:id", getUser _),
         namedCall("/api/users", createUser _),
         pathCall("/api/users/:userId/friends", addFriend _),

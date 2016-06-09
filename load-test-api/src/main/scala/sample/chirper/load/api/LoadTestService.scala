@@ -27,7 +27,7 @@ trait LoadTestService extends Service {
 
   override def descriptor(): Descriptor = {
     // @formatter:off
-    named("/loadtestservice").`with`(
+    named("/loadtestservice").withCalls(
         namedCall("/load", startLoad _),
         pathCall("/loadHeadless", startLoadHeadless _)
       )
