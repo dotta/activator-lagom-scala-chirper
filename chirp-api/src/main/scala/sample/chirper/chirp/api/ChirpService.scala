@@ -21,7 +21,7 @@ trait ChirpService extends Service {
 
   override def descriptor(): Descriptor = {
     // @formatter:off
-    named("chirpservice").`with`(
+    named("chirpservice").withCalls(
         pathCall("/api/chirps/live/:userId", addChirp _),
         namedCall("/api/chirps/live", getLiveChirps _),
         namedCall("/api/chirps/history", getHistoricalChirps _)

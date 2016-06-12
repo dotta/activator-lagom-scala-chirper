@@ -21,7 +21,7 @@ trait ActivityStreamService extends Service {
 
   override def descriptor(): Descriptor = {
     // @formatter:off
-    named("activityservice").`with`(
+    named("activityservice").withCalls(
         pathCall("/api/activity/:userId/live", getLiveActivityStream _),
         pathCall("/api/activity/:userId/history", getHistoricalActivityStream _)
       ).withAutoAcl(true)
