@@ -33,7 +33,8 @@ object ChirpServiceImpl {
 
 class ChirpServiceImpl @Inject()(
   topics: PubSubRegistry,
-  db: CassandraSession
+  db: CassandraSession,
+  tableCreator: CassandraTableCreator
   )(implicit ex: ExecutionContext) extends ChirpService {
 
   // Needed to convert some Scala types to Java
@@ -41,20 +42,13 @@ class ChirpServiceImpl @Inject()(
 
   private val log = LoggerFactory.getLogger(classOf[ChirpServiceImpl])
 
-  createTable()
-  
-  private def createTable(): Unit = {
-    // @formatter:off
-    val result = db.executeCreateTable(
-      """CREATE TABLE IF NOT EXISTS chirp
-       | (userId text, timestamp bigint, uuid text, message text,
-       | PRIMARY KEY (userId, timestamp, uuid))
-       |""".stripMargin
-    )
-    result.onFailure {
-      case err: Throwable => log.error(s"Failed to create chirp table, due to: ${err.getMessage}", err)
-    }
-  }
+  tableCreator.createTable(
+    """CREATE TABLE IF NOT EXISTS chirp
+     | (userId text, timestamp bigint, uuid text, message text,
+     | PRIMARY KEY (userId, timestamp, uuid))
+     |""".stripMargin
+  )
+
 
   override def addChirp(userId: String): ServiceCall[Chirp, NotUsed] = {
     chirp => {
