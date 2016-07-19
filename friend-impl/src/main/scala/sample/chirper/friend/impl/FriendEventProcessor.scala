@@ -74,7 +74,7 @@ class FriendEventProcessor @Inject()(implicit ec: ExecutionContext) extends Cass
   }
 
   private def selectOffset(session: CassandraSession) = {
-    val select = session.selectOne("SELECT offset FROM friend_offset")
+    val select = session.selectOne("SELECT offset FROM friend_offset WHERE partition=1")
     select.map { maybeRow => maybeRow.map[UUID](_.getUUID("offset")) }
   }
 
