@@ -85,7 +85,10 @@ lazy val loadTestImpl = project("load-test-impl")
 lazy val utils = project("utils")
   .settings(
     version := "1.0-SNAPSHOT",
-    libraryDependencies += lagomJavadslApi
+    libraryDependencies ++= Seq(
+      lagomJavadslApi,
+      lagomJavadslServer
+    )
   )
 
 def project(id: String) = Project(id, base = file(id))
